@@ -8,17 +8,33 @@ let pdfjsLib: any = null;
 let isLoading = false;
 let loadPromise: Promise<any> | null = null;
 
+// async function loadPdfJs(): Promise<any> {
+//   if (pdfjsLib) return pdfjsLib;
+//   if (loadPromise) return loadPromise;
+
+//   isLoading = true;
+//   // @ts-expect-error - pdfjs-dist/build/pdf.mjs is not a module
+//   loadPromise = import("pdfjs-dist/build/pdf.mjs").then((lib) => {
+//     // Set the worker source to use local file
+//     lib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+//     pdfjsLib = lib;
+//     isLoading = false;
+//     return lib;
+//   });
+
+//   return loadPromise;
+// }
+
 async function loadPdfJs(): Promise<any> {
   if (pdfjsLib) return pdfjsLib;
   if (loadPromise) return loadPromise;
 
-  isLoading = true;
-  // @ts-expect-error - pdfjs-dist/build/pdf.mjs is not a module
-  loadPromise = import("pdfjs-dist/build/pdf.mjs").then((lib) => {
-    // Set the worker source to use local file
-    lib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+  loadPromise = import("pdfjs-dist/legacy/build/pdf").then(async (lib) => {
+    const worker = await import("pdfjs-dist/legacy/build/pdf.worker?url");
+
+    lib.GlobalWorkerOptions.workerSrc = worker.default;
+
     pdfjsLib = lib;
-    isLoading = false;
     return lib;
   });
 
